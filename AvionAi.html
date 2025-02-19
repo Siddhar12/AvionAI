@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AvionAi - Bird Species Identifier</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* General Reset */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            background-image: url('images/background1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Overlay Effect */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        /* Centering Content */
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        /* Heading */
+        h1 {
+    font-size: 2rem; /* Reduced size */
+    margin-top: -120px; /* Moves heading closer to the top */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    position: relative;
+    color: white;
+    animation: fadeInSlide 1.5s ease-in-out, glowEffect 1s infinite alternate;
+}
+
+/* ✅ Animation: Fade in and slide down */
+@keyframes fadeInSlide {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ✅ Glow effect for a subtle shine */
+@keyframes glowEffect {
+    0% {
+        text-shadow: 0 0 5px rgba(76, 175, 80, 0.8), 0 0 10px rgba(76, 175, 80, 0.6);
+    }
+    100% {
+        text-shadow: 0 0 10px rgba(76, 175, 80, 1), 0 0 20px rgba(76, 175, 80, 0.8);
+    }
+}
+
+
+
+        /* Slider */
+     /* Slider Container */
+.slider-container {
+    width: 70%;
+    height: 250px;
+    overflow: hidden;
+    margin: 20px auto 50px auto; /* Adjusted margin */
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+
+}
+
+/* Slider Wrapper */
+.slider {
+    display: flex;
+    width: 100%; /* Instead of 500%, we let it grow dynamically */
+    transition: transform 1s ease-in-out;
+}
+
+/* Slider Images */
+.slider img {
+    width: 100%;  /* Each image takes full width of its container */
+    height: 100%;
+    object-fit: cover;  /* Ensures images cover the area without distortion */
+    flex: 0 0 100%; /* Ensures each image takes exactly 100% of slider width */
+    opacity: 0.7;
+    transition: opacity 0.3s ease-in-out;
+}
+.slider img:hover {
+    opacity: 1; /* Fully visible when hovered */
+}
+
+
+
+        /* Intro Section */
+        .intro {
+            font-size: 1.2rem;
+            margin: 20px auto;
+            width: 80%;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        /* Button */
+        /* Updated Button */
+.btn {
+    display: inline-block;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.0); /* Semi-transparent background */
+    border: 2px solid white; /* White border */
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    text-decoration: none;
+    backdrop-filter: blur(10px); /* Glassmorphism effect */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Soft glow */
+}
+
+/* Hover Effect */
+.btn:hover {
+    transform: scale(1.04);
+    background: linear-gradient(45deg, rgba(34, 139, 34, 0.9), rgba(0, 100, 0, 0.9)); /* Dark green gradient */
+    box-shadow: 0 0 20px rgba(0, 128, 0, 0.7); /* Soft green glow */
+    border-color: transparent;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <h1><span style="color: #4CAF50;">AvionAi</span> - Bird Species Identifier</h1>
+
+        <!-- ✅ Wrapped slider in a proper div -->
+        <div class="slider-container">
+            <div class="slider">
+                <img src="images/sliderimg1.jpg" alt="Bird 1">
+                <img src="images/sliderimg2.jpg" alt="Bird 2">
+                <img src="images/sliderimg3.jpg" alt="Bird 3">
+                <img src="images/sliderimg4.jpg" alt="Bird 4">
+                <img src="images/sliderimg5.jpg" alt="Bird 5">
+            </div>
+        </div>
+
+        <div class="intro">Discover and learn about various bird species with AvionAi. Your ultimate AI-powered bird species identifier.</div>
+        <a href="index (2).html" class="btn">Get Started</a>
+    </div>
+
+    <script>
+        const slider = document.querySelector('.slider');
+        let index = 0;
+
+        function slideImages() {
+            index = (index + 1) % 5; // Loops through 5 images
+            slider.style.transform = `translateX(-${index * 100}%)`;
+        }
+
+        // ✅ Slides every 3 seconds (adjust to 2000ms for 2 seconds)
+        setInterval(slideImages, 2000);
+    </script>
+</body>
+</html>
