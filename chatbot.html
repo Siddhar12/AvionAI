@@ -3,8 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Chatbot</title>
+    <title>AvionAi - AI Assistant</title>
+    <!-- Add Supabase script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Add Quicksand font -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Navbar Styles - Updated to match AvionAi.html */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .nav-link:hover {
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #nav-username {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-left: 1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Adjust chat container position */
+        body {
+            padding-top: 80px;
+        }
+
+        /* Remove the back button as we now have navbar */
+        .back-button {
+            display: none;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/api/placeholder/1920/1080') center/cover fixed;
@@ -145,10 +223,10 @@
             transform: translateY(0);
         }
 
-        /* Round floating back button */
+        /* Update the back button position */
         .back-button {
             position: fixed;
-            top: 20px;
+            top: 100px; /* Changed from 20px to 100px to move it below navbar */
             left: 20px;
             width: 50px;
             height: 50px;
@@ -174,9 +252,151 @@
         .back-button:active {
             transform: translateY(0);
         }
+
+        /* Add these new responsive navbar styles */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1002;
+        }
+
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        @media screen and (max-width: 768px) {
+            /* Navbar adjustments */
+            .navbar {
+                padding: 0.8rem;
+            }
+
+            .hamburger {
+                display: block;
+                margin-left: auto; /* Push to right */
+            }
+
+            .nav-links {
+                position: fixed;
+                right: -100%;
+                top: 0;
+                height: 100vh;
+                width: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: 0.5s ease;
+                padding: 4rem 2rem 2rem 2rem;
+                z-index: 1001;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-link {
+                margin: 1rem 0;
+                font-size: 1.2rem;
+            }
+
+            /* Hamburger Animation */
+            .hamburger.active .line1 {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .hamburger.active .line2 {
+                opacity: 0;
+            }
+
+            .hamburger.active .line3 {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            #nav-username {
+                margin: 1rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 1.4rem;
+            }
+
+            /* Content adjustments */
+            .container {
+                margin-top: 4rem;
+                padding: 1rem;
+            }
+
+            /* Specific adjustments for each page */
+            /* For AvionAi.html */
+            .title {
+                margin-top: 2rem;
+                font-size: 1.8rem;
+            }
+
+            /* For chatbot.html */
+            .chat-container {
+                margin-top: 4rem;
+                height: calc(100vh - 5rem);
+                width: 95%;
+            }
+
+            /* For community.html */
+            .header {
+                margin-top: 4rem;
+                padding: 1rem;
+            }
+
+            .create-post {
+                margin-top: 2rem;
+                width: 95%;
+            }
+
+            /* For index (2).html */
+            .recognition-card {
+                margin-top: 4rem;
+                width: 95%;
+            }
+
+            /* General body adjustments */
+            body {
+                padding-top: 0;
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+
+            /* Fix overlapping issues */
+            .overlay {
+                z-index: 0;
+            }
+        }
     </style>
 </head>
 <body>
+
+
+
+
+    <nav class="navbar">
+        <a href="AvionAi.html" class="navbar-brand">AvionAI</a>
+        <div class="hamburger">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+        <div class="nav-links">
+            <a href="AvionAi.html" class="nav-link">Home</a>
+            <a href="index (2).html" class="nav-link">Bird Identifier</a>
+            <a href="community.html" class="nav-link">Community</a>
+            <a href="chatbot.html" class="nav-link">AI Assistant</a>
+            <span id="nav-username">Loading...</span>
+        </div>
+    </nav>
     <!-- Back Button -->
     <button class="back-button" onclick="window.location.href='./AvionAi.html'">←</button>
 
@@ -231,6 +451,54 @@
             chatBox.innerHTML += `<div class='chat-message bot-message'>${botReply}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
+
+        async function displayUsername() {
+            // Create Supabase client correctly
+            const supabaseClient = supabase.createClient(
+                'https://hjionmetmiphksnptsso.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs'
+            );
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const { data: userData, error } = await supabaseClient
+                    .from('profiles')
+                    .select('username')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!error && userData) {
+                    document.getElementById('nav-username').textContent = userData.username;
+                } else {
+                    document.getElementById('nav-username').textContent = 'User';
+                }
+            } else {
+                document.getElementById('nav-username').textContent = 'Guest';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', displayUsername);
     </script>
+
+
+
+
+<script>
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    const links = document.querySelectorAll('.nav-link');
+
+    hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    });
+
+    links.forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+        });
+    });
+</script>
 </body>
 </html>
