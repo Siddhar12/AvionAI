@@ -5,15 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AvionAi - Bird Species Identifier</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* General Reset */
+
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .nav-link:hover {
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #nav-username {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-left: 1rem;
+            font-weight: 600;
+        }
+
+        /* Adjust existing container margin */
+        .container {
+            margin-top: 100px;
+        }
+
+    
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
             text-align: center;
             color: white;
-            background-image: url('background1.jpg');
+            background-image: url('images/background1.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -109,7 +173,7 @@
 .slider img {
     width: 100%;  /* Each image takes full width of its container */
     height: 100%;
-    object-fit: cover;  /* Ensures images cover the area without distortion *ack/
+    object-fit: cover;  /* Ensures images cover the area without distortion */
     flex: 0 0 100%; /* Ensures each image takes exactly 100% of slider width */
     opacity: 0.7;
     transition: opacity 0.3s ease-in-out;
@@ -155,6 +219,7 @@
     border-color: transparent;
 }
 
+/* Add these new responsive navbar styles */
 .hamburger {
     display: none;
     cursor: pointer;
@@ -220,10 +285,12 @@
         font-size: 1.5rem;
     }
 }
+
     </style>
 </head>
 <body>
-    
+
+
     <nav class="navbar">
         <a href="AvionAi.html" class="navbar-brand">AvionAI</a>
         <div class="hamburger">
@@ -239,6 +306,9 @@
             <span id="nav-username">Loading...</span>
         </div>
     </nav>
+
+
+    
     <div class="overlay"></div>
     <div class="container">
         <h1><span style="color: #4CAF50;">AvionAi</span> - Bird Species Identifier</h1>
@@ -246,16 +316,16 @@
         <!-- ✅ Wrapped slider in a proper div -->
         <div class="slider-container">
             <div class="slider">
-                <img src="sliderimg1.jpg" alt="Bird 1">
-                <img src="sliderimg2.jpg" alt="Bird 2">
-                <img src="sliderimg3.jpg" alt="Bird 3">
-                <img src="sliderimg4.jpg" alt="Bird 4">
-                <img src="sliderimg5.jpg" alt="Bird 5">
+                <img src="images/sliderimg1.jpg" alt="Bird 1">
+                <img src="images/sliderimg2.jpg" alt="Bird 2">
+                <img src="images/sliderimg3.jpg" alt="Bird 3">
+                <img src="images/sliderimg4.jpg" alt="Bird 4">
+                <img src="images/sliderimg5.jpg" alt="Bird 5">
             </div>
         </div>
 
         <div class="intro">Discover and learn about various bird species with AvionAi. Your ultimate AI-powered bird species identifier.</div>
-        <a href="index(2).html" class="btn">Get Started</a>
+        <a href="index (2).html" class="btn">Get Started</a>
     </div>
 
     <script>
@@ -269,6 +339,53 @@
 
         // ✅ Slides every 3 seconds (adjust to 2000ms for 2 seconds)
         setInterval(slideImages, 2000);
+    </script>
+
+    <script>
+        async function displayUsername() {
+            // Create Supabase client correctly
+            const supabaseClient = supabase.createClient(
+                'https://hjionmetmiphksnptsso.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs'
+            );
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const { data: userData, error } = await supabaseClient
+                    .from('profiles')
+                    .select('username')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!error && userData) {
+                    document.getElementById('nav-username').textContent = userData.username;
+                } else {
+                    document.getElementById('nav-username').textContent = 'User';
+                }
+            } else {
+                document.getElementById('nav-username').textContent = 'Guest';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', displayUsername);
+    </script>
+
+    <script>
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        const links = document.querySelectorAll('.nav-link');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+            });
+        });
     </script>
 </body>
 </html>
