@@ -69,6 +69,7 @@
             border-radius: 20px;
             margin-left: 1rem;
             font-weight: 600;
+            color: white;
         }
 
         /* Remove background and blur from header */
@@ -357,24 +358,138 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        /* Hamburger menu styles */
+        .hamburger {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            justify-content: space-between;
+            width: 25px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links.active {
+            flex-direction: column; /* Stack links vertically */
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            width: 100%;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-links.active .nav-link {
+            padding: 0.5rem 0;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .hamburger {
+            display: flex; /* Show hamburger menu on small screens */
+        }
+
+        /* Hamburger menu styles */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1002;
+        }
+
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 0.8rem;
+            }
+
+            .hamburger {
+                display: block;
+                margin-left: auto;
+            }
+
+            .nav-links {
+                position: fixed;
+                right: -100%;
+                top: 0;
+                height: 100vh;
+                width: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: 0.5s ease;
+                padding: 4rem 2rem 2rem 2rem;
+                z-index: 1001;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-link {
+                margin: 1rem 0;
+                font-size: 1.2rem;
+            }
+
+            .hamburger.active .line1 {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .hamburger.active .line2 {
+                opacity: 0;
+            }
+
+            .hamburger.active .line3 {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            #nav-username {
+                margin: 1rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 1.4rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
+    <div class="navbar">
         <a href="AvionAi.html" class="navbar-brand">AvionAI</a>
+        <div class="hamburger">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
         <div class="nav-links">
             <a href="AvionAi.html" class="nav-link">Home</a>
             <a href="index (2).html" class="nav-link">Bird Identifier</a>
             <a href="community.html" class="nav-link">Community</a>
             <a href="chatbot.html" class="nav-link">AI Assistant</a>
-            <span id="nav-username">Loading...</span>
+            <span id="nav-username">Guest</span>
         </div>
-    </nav>
-
+    </div>
     <div class="header">
         <h1>AvionAI Community</h1>
     </div>
-
     <div class="create-post">
         <textarea id="post-content" rows="4" placeholder="Share your bird watching experience..."></textarea>
         <label for="image-upload" class="custom-file-upload">
@@ -387,7 +502,7 @@
 
     <div id="posts-container"></div>
 
-    <a href="AvionAi.html   " class="home-btn">🏠Home</a>
+    <a href="AvionAi.html" class="home-btn">🏠Home</a>
 
     <div id="imageModal" class="modal">
         <span class="close-modal">&times;</span>
@@ -612,28 +727,22 @@
                 fileNameSpan.textContent = '';
             }
         });
-    </script>
 
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        const links = document.querySelectorAll('.nav-link');
 
-
-
-
-<script>
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
-    const links = document.querySelectorAll('.nav-link');
-
-    hamburger.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        hamburger.classList.toggle('active');
-    });
-
-    links.forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            hamburger.classList.remove('active');
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
         });
-    });
-</script>
+
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+            });
+        });
+    </script>
 </body>
 </html>
