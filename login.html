@@ -64,25 +64,35 @@ async function signInWithGoogle() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        // ✅ Upsert user into Supabase profiles table without modifying the UUID manually
-        const { data, error } = await supabase
-    .from('profiles')
-    .upsert({
-        userid: user.uid,  // Use Firebase UID directly
-        username: user.displayName || user.email.split('@')[0],
-        email: user.email,
-        created_at: new Date().toISOString()
-    }, {
-        onConflict: 'userid'  // If user already exists, update the record
-    });
+        // First, authenticate with Supabase using Firebase token
+        const { error: authError } = await supabase.auth.signInWithIdToken({
+            token: await user.getIdToken()
+        });
 
+        if (authError) {
+            console.error("Supabase Auth Error:", authError);
+            throw authError;
+        }
+
+        // Then, upsert profile with explicit userid
+        const { data, error } = await supabase
+            .from('profiles')
+            .upsert({
+                userid: user.uid,  // Explicitly set userid
+                username: user.displayName || user.email.split('@')[0],
+                email: user.email,
+                created_at: new Date().toISOString()
+            }, {
+                onConflict: 'userid',
+                returning: 'minimal'
+            });
 
         if (error) {
             console.error("Supabase User Creation Error:", error);
-            return;
+            throw error;
         }
 
-        // Save email and UUID in localStorage
+        // Save user details
         localStorage.setItem("user_email", user.email);
         localStorage.setItem("user_uuid", user.uid);
 
@@ -91,6 +101,7 @@ async function signInWithGoogle() {
 
     } catch (error) {
         console.error("Google Sign-In Error:", error.message);
+        alert("Sign-in failed. Please try again.");
     }
 }
 
