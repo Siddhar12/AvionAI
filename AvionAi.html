@@ -411,54 +411,53 @@
         setInterval(slideImages, 2000);
     </script>
 
-    <script>
-        async function displayUsername() {
-            // Create Supabase client correctly
-            const supabaseClient = supabase.createClient(
-                'https://hjionmetmiphksnptsso.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs'
-            );
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-            // Run authentication check when the page loads
-            document.addEventListener("DOMContentLoaded", checkAuth);
+    // Supabase Configuration
+    const supabaseUrl = "https://hjionmetmiphksnptsso.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-                const { data: userData, error } = await supabaseClient
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', user.id)
-                    .single();
+    async function displayUsername() {
+        const { data: { user }, error } = await supabase.auth.getUser();
 
-                if (!error && userData) {
-                    document.getElementById('nav-username').textContent = userData.username;
-                } else {
-                    document.getElementById('nav-username').textContent = 'User';
-                }
-            } else {
-                document.getElementById('nav-username').textContent = 'Guest';
-            }
+        if (error || !user) {
+            console.error("Error fetching user:", error);
+            document.getElementById("nav-username").textContent = "Guest";
+            return;
         }
 
-        async function signOut() {
-            const supabaseClient = supabase.createClient(
-                'https://hjionmetmiphksnptsso.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs'
-            );
+        // Fetch user's profile from Supabase
+        const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", user.id)
+            .single();
 
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) {
-                console.error("Error signing out:", error.message);
-            } else {
-                window.location.href = "login.html"; // Redirect to login page after logout
-            }
+        if (profileError || !profile) {
+            console.error("Profile Fetch Error:", profileError);
+            document.getElementById("nav-username").textContent = user.email; // Fallback to email
+        } else {
+            document.getElementById("nav-username").textContent = profile.email; // Show email
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            displayUsername();
-            document.getElementById("logout-btn").addEventListener("click", signOut);
-        });
-    </script>
+    async function signOut() {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Error signing out:", error.message);
+        } else {
+            window.location.href = "index.html"; // Redirect to login page after logout
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        displayUsername();
+        document.getElementById("logout-btn").addEventListener("click", signOut);
+    });
+</script>
+
 
     <script>
         const hamburger = document.querySelector('.hamburger');
