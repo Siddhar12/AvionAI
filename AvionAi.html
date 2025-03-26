@@ -423,10 +423,10 @@
 
     async function displayUsername() {
         try {
-            // Try restoring session
+            // 🔹 1. Try getting session from Supabase
             const { data: session, error } = await supabase.auth.getSession();
 
-            let userEmail = localStorage.getItem("user_email"); // Fallback to localStorage
+            let userEmail = localStorage.getItem("user_email"); // Backup from localStorage
 
             if (session?.session?.user) {
                 userEmail = session.session.user.email; // Use Supabase session if available
@@ -438,6 +438,7 @@
                 return;
             }
 
+            // 🔹 2. Set the email in navbar
             document.getElementById("nav-username").textContent = userEmail;
         } catch (err) {
             console.error("Unexpected Error:", err);
@@ -450,11 +451,7 @@
         window.location.href = "index.html"; // Redirect to login
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        displayUsername();
-        document.getElementById("logout-btn").addEventListener("click", signOut);
-    });
-
+    // 🔹 Run the function when the page loads
     document.addEventListener("DOMContentLoaded", () => {
         displayUsername();
         document.getElementById("logout-btn").addEventListener("click", signOut);
