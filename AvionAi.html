@@ -411,24 +411,33 @@
         setInterval(slideImages, 2000);
     </script>
 
- <script type="module">
+<script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Supabase Configuration
-    const supabaseUrl = "https://hjionmetmiphksnptsso.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs";
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    // Initialize Supabase Client with Session Persistence
+    const supabase = createClient(
+        "https://hjionmetmiphksnptsso.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs",
+        {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        }
+    );
 
     async function displayUsername() {
         try {
-            // Wait for Supabase to restore session (Fix for "Auth session missing!")
-            await supabase.auth.getSession(); 
+            // Restore the session to avoid "Auth session missing!"
+            const { data: session } = await supabase.auth.getSession();
 
-            // Get the logged-in user
-            const { data: { user }, error } = await supabase.auth.getUser();
+            if (!session || !session.session) {
+                console.warn("No active session found.");
+                document.getElementById("nav-username").textContent = "Guest";
+                return;
+            }
 
-            if (error || !user) {
-                console.error("Error fetching user:", error);
+            const user = session.session.user;
+
+            if (!user) {
+                console.warn("User not found in session.");
                 document.getElementById("nav-username").textContent = "Guest";
                 return;
             }
@@ -465,6 +474,7 @@
         document.getElementById("logout-btn").addEventListener("click", signOut);
     });
 </script>
+
 
 
     <script>
