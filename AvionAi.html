@@ -422,52 +422,39 @@
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         }
     );
-
-    async function displayUsername() {
+ async function displayUsername() {
         try {
-            // Restore the session to avoid "Auth session missing!"
-            const { data: session } = await supabase.auth.getSession();
+            // Try to get the session
+            const { data: session, error } = await supabase.auth.getSession();
 
-            if (!session || !session.session) {
-                console.warn("No active session found.");
+            let userEmail = localStorage.getItem("user_email"); // Fallback to localStorage
+
+            if (session?.session?.user) {
+                userEmail = session.session.user.email; // Use Supabase session if available
+            }
+
+            if (!userEmail) {
+                console.warn("No active session or stored email found.");
                 document.getElementById("nav-username").textContent = "Guest";
                 return;
             }
 
-            const user = session.session.user;
-
-            if (!user) {
-                console.warn("User not found in session.");
-                document.getElementById("nav-username").textContent = "Guest";
-                return;
-            }
-
-            // Fetch user's email from Supabase profiles table
-            const { data: profile, error: profileError } = await supabase
-                .from("profiles")
-                .select("email")
-                .eq("id", user.id)
-                .single();
-
-            if (profileError || !profile) {
-                console.error("Profile Fetch Error:", profileError);
-                document.getElementById("nav-username").textContent = user.email; // Fallback to email
-            } else {
-                document.getElementById("nav-username").textContent = profile.email; // Show email
-            }
+            document.getElementById("nav-username").textContent = userEmail;
         } catch (err) {
             console.error("Unexpected Error:", err);
         }
     }
 
     async function signOut() {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Error signing out:", error.message);
-        } else {
-            window.location.href = "index.html"; // Redirect to login page after logout
-        }
+        await supabase.auth.signOut();
+        localStorage.removeItem("user_email"); // Clear stored email
+        window.location.href = "index.html"; // Redirect to login
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        displayUsername();
+        document.getElementById("logout-btn").addEventListener("click", signOut);
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
         displayUsername();
