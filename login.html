@@ -6,8 +6,6 @@
     <title>Google Sign-In</title>
     <script type="module">
         
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
         // Supabase Configuration
@@ -15,62 +13,22 @@
         const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs";
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDobdjO_G4z0jQdNiixsC7_mkVJVbcdDXM",
-            authDomain: "avion-f67ec.firebaseapp.com",
-            projectId: "avion-f67ec",
-            storageBucket: "avion-f67ec.appspot.com",
-            messagingSenderId: "559561225789",
-            appId: "1:559561225789:web:7b3ea1229af9a35e8a5c54",
-            measurementId: "G-YVCLXG80T1"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
         async function signInWithGoogle() {
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-
-                // Authenticate with Supabase using Firebase token
-                const { error: authError } = await supabase.auth.signInWithIdToken({
-                    provider: 'google',  // Explicitly specify provider
-                    token: await user.getIdToken()
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin // Redirect to same page after login
+                    }
                 });
 
-                if (authError) {
-                    console.error("Supabase Auth Error:", authError);
-                    throw authError;
-                }
-
-                // Upsert user data into Supabase
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        userid: user.uid,  // Store Firebase UID
-                        username: user.displayName || user.email.split('@')[0],
-                        email: user.email,
-                        created_at: new Date().toISOString()
-                    }, {
-                        onConflict: 'userid',
-                        returning: 'minimal'
-                    });
-
                 if (error) {
-                    console.error("Supabase User Creation Error:", error);
-                    throw error;
+                    console.error("Supabase Auth Error:", error);
+                    alert("Sign-in failed. Please try again.");
+                    return;
                 }
 
-                // Save user details
-                localStorage.setItem("user_email", user.email);
-                localStorage.setItem("user_uuid", user.uid);
-
-                // Redirect to AvionAi page
-                window.location.href = "https://avion-ai.vercel.app/AvionAi.html";
+                console.log("Redirecting to Google login...");
 
             } catch (error) {
                 console.error("Google Sign-In Error:", error.message);
