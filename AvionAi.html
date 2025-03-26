@@ -414,17 +414,16 @@
 <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Initialize Supabase Client with Session Persistence
-    const supabase = createClient(
-        "https://hjionmetmiphksnptsso.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs",
-        {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        }
-    );
- async function displayUsername() {
+    // Supabase Configuration
+    const supabaseUrl = "https://hjionmetmiphksnptsso.supabase.co";
+    const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    async function displayUsername() {
         try {
-            // Try to get the session
+            // Try restoring session
             const { data: session, error } = await supabase.auth.getSession();
 
             let userEmail = localStorage.getItem("user_email"); // Fallback to localStorage
@@ -461,6 +460,7 @@
         document.getElementById("logout-btn").addEventListener("click", signOut);
     });
 </script>
+
 
 
 
