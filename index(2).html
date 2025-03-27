@@ -169,7 +169,16 @@
         .loading {
             position: relative;
         }
-
+        #nav-username {
+                margin: 1.5rem 0;
+            }
+            #nav-username {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-left: 1rem;
+            font-weight: 600;
+        }
         .loading::after {
             content: '';
             position: absolute;
@@ -568,7 +577,29 @@
                 buttonEl.disabled = false;
                 buttonEl.classList.remove("loading");
             }
+        } async function displayUsername() {
+        try {
+            // 🔹 1. Try getting session from Supabase
+            const { data: session, error } = await supabase.auth.getSession();
+
+            let userEmail = localStorage.getItem("user_email"); // Backup from localStorage
+
+            if (session?.session?.user) {
+                userEmail = session.session.user.email; // Use Supabase session if available
+            }
+
+            if (!userEmail) {
+                console.warn("No active session or stored email found.");
+                document.getElementById("nav-username").textContent = "Guest";
+                return;
+            }
+
+            // 🔹 2. Set the email in navbar
+            document.getElementById("nav-username").textContent = userEmail;
+        } catch (err) {
+            console.error("Unexpected Error:", err);
         }
+    }
     </script>
       <style>
         /* Previous styles remain the same */
