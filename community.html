@@ -4,10 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AvionAI Community</title>
+ 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+        .like-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: gray;
+        }
+        .like-btn.liked {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="AvionAi.html" class="navbar-brand">AvionAI</a>
+        <div class="nav-links">
+            <a href="AvionAi.html" class="nav-link">Home</a>
+            <a href="index(2).html" class="nav-link">Bird Identifier</a>
+            <a href="community.html" class="nav-link">Community</a>
+            <a href="chatbot.html" class="nav-link">AI Assistant</a>
+            <span id="nav-username">Guest</span>
+            <button id="logout-btn" class="btn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>AvionAI Community</h1>
+    </div>
+
+    <div class="create-post">
+        <textarea id="post-content" rows="4" placeholder="Share your bird-watching experience..."></textarea>
+        <input type="file" id="image-upload" accept="image/*">
+        <button onclick="createPost()">Create Post</button>
+    </div>
+
+    <div id="posts-container"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+     const firebaseConfig = {
+            apiKey: "AIzaSyDobdjO_G4z0jQdNiixsC7_mkVJVbcdDXM",
+            authDomain: "avion-f67ec.firebaseapp.com",
+            projectId: "avion-f67ec",
+            storageBucket: "avion-f67ec.appspot.com",
+            messagingSenderId: "559561225789",
+            appId: "1:559561225789:web:7b3ea1229af9a35e8a5c54",
+            measurementId: "G-YVCLXG80T1"
+        };
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+    
+        const supabase = createClient(
+            "https://hjionmetmiphksnptsso.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs"
+        );
+    
+        function displayUsername() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    document.getElementById("nav-username").textContent = user.email;
+                } else {
+                    document.getElementById("nav-username").textContent = "Guest";
+                }
+            });
+        }
+    
+        window.toggleLike = async function (postId) {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Please sign in to like posts.");
+        return;
+    }
+
+    // Fetch post data
+    const { data: post, error } = await supabase
+        .from("posts")
+        .select("likes, liked_users")
+        .eq("id", postId)
+        .single();
+
+    if (error || !post) {
+        console.error("Error fetching post:", error);
+        return;
+    }
+
+    let likedUsers = post.liked_users || []; // Ensure liked_users is an array
+    let newLikes = post.likes;
+
+    if (likedUsers.includes(user.email)) {
+        // Unlike: Remove user email from liked_users array
+        likedUsers = likedUsers.filter(email => email !== user.email);
+        newLikes -= 1;
+    } else {
+        // Like: Add user email to liked_users array
+        likedUsers.push(user.email);
+        newLikes += 1;
+    }
+
+    // Update post likes and liked_users array
+    const { error: updateError } = await supabase
+        .from("posts")
+        .update({ likes: newLikes, liked_users: likedUsers })
+        .eq("id", postId);
+
+    if (updateError) {
+        console.error("Error updating likes:", updateError);
+    } else {
+        console.log("Like updated successfully");
+        document.getElementById(`like-count-${postId}`).textContent = newLikes;
+        document.querySelector(`[onclick="toggleLike('${postId}')"]`).classList.toggle("liked");
+    }
+    await loadPosts();
+};
+
+window.createPost = async function () {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Please sign in to create a post.");
+        return;
+    }
+
+    const content = document.getElementById("post-content").value;
+    if (!content.trim()) {
+        alert("Post content cannot be empty!");
+        return;
+    }
+
+    const { data, error } = await supabase.from("posts").insert([
+        { email: user.email, content: content, likes: 0, liked_users: [] }
+    ]);
+
+    if (error) {
+        console.error("Error creating post:", error);
+    } else {
+        document.getElementById("post-content").value = ""; // Clear textarea
+        await loadPosts(); // Refresh post list
+    }
+};
+
+        
+    
+        window.loadPosts = async function () {
+            const user = auth.currentUser;
+            const { data: posts, error } = await supabase
+                .from("posts")
+                .select("*")
+                .order("created_at", { ascending: false });
+    
+            if (error) {
+                console.error(error);
+                return;
+            }
+    
+            const postsContainer = document.getElementById("posts-container");
+            postsContainer.innerHTML = "";
+    
+            for (let post of posts) {
+                let isLiked = false;
+                
+                if (user) {
+                    const { data: likeData } = await supabase
+                        .from("likes")
+                        .select("*")
+                        .eq("post_id", post.id)
+                        .eq("user_id", user.uid)
+                        .single();
+                    isLiked = likeData !== null;
+                }
+    
+                const postElement = document.createElement("div");
+                postElement.className = "post";
+                postElement.innerHTML = `
+                    <p><strong>User:</strong> ${post.email}</p>
+                    <p>${post.content}</p>
+                    ${post.base_image ? `<img src="${post.base_image}" alt="Post Image">` : ""}
+                    <button class="like-btn ${isLiked ? "liked" : ""}" onclick="toggleLike('${post.id}')">
+                        <i class="fas fa-heart"></i> <span id="like-count-${post.id}">${post.likes}</span>
+                    </button>
+                `;
+                postsContainer.appendChild(postElement);
+            }
+        };
+    
+        displayUsername();
+        loadPosts();
+    </script>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
         * {
             margin: 0;
@@ -71,8 +263,6 @@
             font-weight: 600;
             color: white;
         }
-
-        /* Remove background and blur from header */
         .header {
             margin-top: 80px;
             background: none;
@@ -98,7 +288,6 @@
         #user-name {
             display: none;
         }
-
         body {
             background: linear-gradient(135deg, 
                 #1a2a6c,  /* Deep blue */
@@ -111,7 +300,6 @@
             min-height: 100vh;
             position: relative;
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -122,7 +310,6 @@
             background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
             z-index: -1;
         }
-
         .create-post {
             max-width: 800px;
             margin: 2rem auto;
@@ -131,9 +318,7 @@
             backdrop-filter: blur(12px);
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        #post-content {
+        } #post-content {
             width: 100%;
             padding: 1rem;
             border: none;
@@ -218,8 +403,9 @@
             padding-bottom: 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .post-date {
+/* Like button styles */
+/* Like button styles */
+.post-date {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.7);
         }
@@ -469,280 +655,9 @@
                 font-size: 1.4rem;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="navbar">
-        <a href="AvionAi.html" class="navbar-brand">AvionAI</a>
-        <div class="hamburger">
-            <div class="line1"></div>
-            <div class="line2"></div>
-            <div class="line3"></div>
-        </div>
-        <div class="nav-links">
-            <a href="AvionAi.html" class="nav-link">Home</a>
-            <a href="index (2).html" class="nav-link">Bird Identifier</a>
-            <a href="community.html" class="nav-link">Community</a>
-            <a href="chatbot.html" class="nav-link">AI Assistant</a>
-            <span id="nav-username">Guest</span>
-        </div>
-    </div>
-    <div class="header">
-        <h1>AvionAI Community</h1>
-    </div>
-    <div class="create-post">
-        <textarea id="post-content" rows="4" placeholder="Share your bird watching experience..."></textarea>
-        <label for="image-upload" class="custom-file-upload">
-            📸 Choose Photo 🖼️
-            <span class="file-name"></span>
-        </label>
-        <input type="file" id="image-upload" accept="image/*">
-        <button onclick="createPost()">Create Post</button>
-    </div>
 
-    <div id="posts-container"></div>
 
-    <a href="AvionAi.html" class="home-btn">🏠Home</a>
 
-    <div id="imageModal" class="modal">
-        <span class="close-modal">&times;</span>
-        <img class="modal-content" id="modalImage">
-    </div>
-
-    <script>
-        const SUPABASE_URL = 'https://hjionmetmiphksnptsso.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaW9ubWV0bWlwaGtzbnB0c3NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4OTIwMjEsImV4cCI6MjA1NTQ2ODAyMX0.-svmO28RlTGJM8iB52wn-MXSAWsUoQeLO5fkERHlWPs';
-        
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        async function displayUserName() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-                const { data: userData, error } = await supabaseClient
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', user.id)
-                    .single();
-
-                if (error) {
-                    console.error("Error fetching username:", error);
-                    return;
-                }
-                // Update the username in the navbar
-                document.getElementById('nav-username').textContent = userData.username || "Anonymous";
-            } else {
-                document.getElementById('nav-username').textContent = "Guest";
-            }
-        }
-
-        async function createPost() {
-            try {
-                const content = document.getElementById('post-content').value.trim();
-                const imageFile = document.getElementById('image-upload').files[0];
-                
-                if (!content) {
-                    alert("Please enter some content");
-                    return;
-                }
-
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) {
-                    alert("Please sign in to create a post");
-                    return;
-                }
-
-                const createButton = document.querySelector('.create-post button');
-                createButton.disabled = true;
-                createButton.textContent = "Creating...";
-
-                // Convert image to base64 if an image was selected
-                let base64Image = null;
-                if (imageFile) {
-                    base64Image = await convertToBase64(imageFile);
-                }
-
-                const { error } = await supabaseClient
-                    .from('posts')
-                    .insert([{ 
-                        content, 
-                        user_id: user.id,
-                        base_image: base64Image 
-                    }]);
-
-                if (error) {
-                    throw error;
-                }
-
-                document.getElementById('post-content').value = "";
-                document.getElementById('image-upload').value = "";
-                await loadPosts();
-                
-            } catch (error) {
-                console.error("Error creating post:", error);
-                alert("Error creating post: " + error.message);
-            } finally {
-                const createButton = document.querySelector('.create-post button');
-                createButton.disabled = false;
-                createButton.textContent = "Create Post";
-            }
-        }
-
-        function convertToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        async function loadPosts() {
-            try {
-                console.log('Attempting to load posts...');
-                const { data: posts, error } = await supabaseClient
-                    .from('posts')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    console.error('Database error:', error);
-                    throw error;
-                }
-
-                const container = document.getElementById('posts-container');
-                container.innerHTML = '';
-
-                if (!posts || posts.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; padding: 20px;">No posts yet!</p>';
-                    return;
-                }
-
-                for (const post of posts) {
-                    const { data: userData } = await supabaseClient
-                        .from('profiles')
-                        .select('username')
-                        .eq('id', post.user_id)
-                        .single();
-
-                    const postElement = document.createElement('div');
-                    postElement.className = 'post';
-                    const formattedDate = new Date(post.created_at).toLocaleString();
-                    
-                    const imageHtml = post.base_image 
-                        ? `<img src="${post.base_image}" alt="Post image" class="post-image" onclick="openModal('${post.base_image}')">` 
-                        : '';
-
-                    postElement.innerHTML = `
-                        <div class="post-header">
-                            <strong>${userData?.username || 'Unknown User'}</strong>
-                            <span class="post-date">${formattedDate}</span>
-                        </div>
-                        <p>${post.content}</p>
-                        ${imageHtml}
-                        <div class="post-footer">
-                            <button onclick="handleLike(${post.id})" class="like-button ${post.likes > 0 ? 'liked' : ''}">
-                                <i class="fas fa-heart"></i>
-                                <span class="like-count">${post.likes || 0}</span>
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(postElement);
-                }
-
-                console.log('Posts loaded and displayed successfully');
-            } catch (error) {
-                console.error('Error in loadPosts:', error);
-                const container = document.getElementById('posts-container');
-                container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error loading posts. Please try again later.</p>';
-            }
-        }
-
-        async function handleLike(postId) {
-            try {
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) {
-                    alert("Please sign in to like posts");
-                    return;
-                }
-
-                // Get current post data
-                const { data: post, error: fetchError } = await supabaseClient
-                    .from('posts')
-                    .select('likes')
-                    .eq('id', postId)
-                    .single();
-
-                if (fetchError) throw fetchError;
-
-                // Update likes count
-                const newLikes = (post.likes || 0) + 1;
-                
-                const { error: updateError } = await supabaseClient
-                    .from('posts')
-                    .update({ likes: newLikes })
-                    .eq('id', postId);
-
-                if (updateError) throw updateError;
-
-                // Refresh posts to show updated likes
-                await loadPosts();
-
-            } catch (error) {
-                console.error("Error handling like:", error);
-                alert("Error liking post: " + error.message);
-            }
-        }
-
-        function openModal(imageSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.style.display = "flex";
-            modalImg.src = imageSrc;
-        }
-
-        function closeModal() {
-            document.getElementById('imageModal').style.display = "none";
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, calling loadPosts...');
-            displayUserName();
-            loadPosts();
-        });
-
-        document.querySelector('.close-modal').addEventListener('click', closeModal);
-        document.getElementById('imageModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeModal();
-            }
-        });
-
-        document.getElementById('image-upload').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            const fileNameSpan = this.previousElementSibling.querySelector('.file-name');
-            if (fileName) {
-                fileNameSpan.textContent = ` - ${fileName}`;
-            } else {
-                fileNameSpan.textContent = '';
-            }
-        });
-
-        const hamburger = document.querySelector('.hamburger');
-        const navLinks = document.querySelector('.nav-links');
-        const links = document.querySelectorAll('.nav-link');
-
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        });
-
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                hamburger.classList.remove('active');
-            });
-        });
-    </script>
+</style>
 </body>
 </html>
