@@ -160,7 +160,7 @@
             }
         }
 
-        async function predictBirdAudio() {
+      async function predictBirdAudio() {
             const resultEl = document.getElementById("audioResult");
             const buttonEl = document.getElementById("audioPredictButton");
             
@@ -192,7 +192,7 @@
                 buttonEl.disabled = false;
                 buttonEl.classList.remove("loading");
             }
-        } async function displayUsername() {
+        }  async function displayUsername() {
         try {
             // 🔹 1. Try getting session from Supabase
             const { data: session, error } = await supabase.auth.getSession();
