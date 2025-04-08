@@ -385,19 +385,27 @@
                 z-index: 0;
             }
         }
-         .aesthetic-btn {
-            transition: all 0.3s ease;
-            background: linear-gradient(145deg, #4CAF50, #388E3C);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-             border-radius: 16px;
-             height:30px;
-             width: 70px;
-             
-        }
-        .aesthetic-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-        }
+       .aesthetic-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #4CAF50, #388E3C);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    height: 30px;
+    width: 70px;
+    color: white; /* Optional: adjust text color for better contrast */
+    font-weight: bold; /* Optional: improve legibility */
+    border: none; /* Optional: remove default border */
+    cursor: pointer; /* Optional: show pointer on hover */
+}
+
+.aesthetic-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
     </style>
 </head>
 <body>
